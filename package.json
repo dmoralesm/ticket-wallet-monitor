@@ -19,13 +19,13 @@
     "nodemailer": "^6.4.13",
     "querystring": "^0.2.0",
     "sequelize": "^6.3.5",
+    "sequelize-cli": "^6.2.0",
     "sqlite3": "^5.0.0"
   },
   "devDependencies": {
     "husky": "^4.3.0",
     "lint-staged": "^10.4.0",
-    "prettier": "^2.1.2",
-    "sequelize-cli": "^6.2.0"
+    "prettier": "^2.1.2"
   },
   "prettier": {
     "printWidth": 100,

@@ -1,0 +1,9 @@
+node_modules
+npm-debug.log
+data
+config/config.json
+src/sql.js
+.dockerignore
+.editorconfig
+.gitignore
+Dockerfile
