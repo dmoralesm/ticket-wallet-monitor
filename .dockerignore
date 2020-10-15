@@ -7,3 +7,6 @@ src/sql.js
 .editorconfig
 .gitignore
 Dockerfile
+assets
+README.md
+.DS_Store
