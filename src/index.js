@@ -7,7 +7,7 @@ const nodemailer = require('nodemailer');
 const config = require('../config/config.json');
 const db = require('../models');
 
-const { BASE_URL, INITIAL, INCOME, EXPENSE, UNAUTHORIZED } = require('./constants');
+const { BASE_URL, INITIAL, INCOME, EXPENSE, CANCELLED, UNAUTHORIZED } = require('./constants');
 
 const mailer = nodemailer.createTransport({
   host: config.smtp_host,
@@ -63,11 +63,26 @@ const checkTicketWallet = async () => {
     const cardList = JSON.parse(balanceRoot.querySelector('#txtCardList').getAttribute('value'));
 
     for (const card of cardList) {
+      const { Number } = card;
+      const cardEnding = Number.substr(-4);
+
+      const isCardCancelled = await db.Transaction.findOne({
+        attributes: ['transactionType'],
+        where: {
+          cardEnding,
+          transactionType: CANCELLED,
+        },
+      });
+
+      if (isCardCancelled) {
+        console.log(`Card ${cardEnding} is cancelled.`);
+        break;
+      }
+
       const cardPayload = querystring.stringify({ token: card.Token });
       const cardData = await _axios.post('Cards/Card/GetCardData', cardPayload);
       const { Success, Item } = cardData.data;
-      const { Number, Balance: currentBalance } = Item;
-      const cardEnding = Number.substr(-4);
+      const { Balance: currentBalance } = Item;
       let newTransaction;
       let transactionType;
       let amount;
@@ -119,6 +134,23 @@ const checkTicketWallet = async () => {
         } else {
           console.log(`No new transaction.`);
         }
+      } else if (Item.Status === 'Canceled') {
+        const transactionType = CANCELLED;
+        const amount = 0;
+        const balance = 0;
+
+        await db.Transaction.create({
+          cardEnding,
+          transactionType,
+          amount,
+          balance,
+        });
+
+        await mailer.sendMail({
+          ...emailPayload,
+          subject: `Card ${cardEnding} is cancelled`,
+          text: `Card ${cardEnding} is cancelled`,
+        });
       } else {
         console.log('Error response.');
       }
